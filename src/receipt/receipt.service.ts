@@ -14,17 +14,33 @@ export class ReceiptService {
   private readonly receiptScores = new Map<string, number>();
 
   create(createReceiptDto: CreateReceiptDto): { id: string } {
+    const points = this.getTotalPoints(createReceiptDto);
+    const uuid = uuidv4();
+    this.receiptScores.set(uuid, points);
+    console.log(this.receiptScores.entries());
+    return { id: uuid };
+  }
+
+  findOne(params: GetOneReceiptDTO) {
+    const { id } = params;
+    console.log({ id });
+    if (!this.receiptScores.has(id)) {
+      throw new NotFoundException('No receipt with this ID');
+    }
+
+    const points = this.receiptScores.get(id);
+    if (points === undefined) {
+      throw new NotFoundException('Error processing request');
+    } else {
+      return { points };
+    }
+  }
+
+  getTotalPoints = (createReceiptDto: CreateReceiptDto) => {
     const { retailer, purchaseDate, purchaseTime, items, total } =
       createReceiptDto;
 
-    // receipt total already verified to be a valid expression of currency by class validator
-    // but we can still throw if something goes wrong here
     const totalCents = this.getTotalCents(total);
-    if (Number.isNaN(totalCents)) {
-      throw new InternalServerErrorException(
-        'unable to parse order total into currency',
-      );
-    }
 
     const retailerPoints = countAlphaNumerics(retailer);
     const roundTotalPoints = this.getRoundTotalPoints(totalCents);
@@ -45,35 +61,15 @@ export class ReceiptService {
       oddDayPoints +
       between2and4Points;
 
-    try {
-      const uuid = uuidv4();
-      this.receiptScores.set(uuid, totalPoints);
-      return { id: uuid };
-    } catch (err) {
-      throw new InternalServerErrorException('Error processing request');
-    }
-  }
+    return totalPoints;
+  };
 
-  findOne(getOneReceiptDTO: GetOneReceiptDTO) {
-    const { id } = getOneReceiptDTO;
-    if (!this.receiptScores.has(id)) {
-      throw new NotFoundException('No receipt with this ID');
-    }
-
-    const points = this.receiptScores.get(id);
-    if (points === undefined) {
-      throw new NotFoundException('Error processing request');
-    } else {
-      return points;
-    }
-  }
-
+  // receipt total already verified to be a valid expression of currency by class validator
+  // but we can still throw if something goes wrong here
   getTotalCents = (total: string): number => {
     const [_dollars, cents] = total.split('.');
     if (cents === undefined) {
-      throw new InternalServerErrorException(
-        'unable to parse cents from order total',
-      );
+      throw new BadRequestException('malformed receipt total price');
     }
     const parsedCents = Number(cents);
     if (Number.isNaN(parsedCents)) {

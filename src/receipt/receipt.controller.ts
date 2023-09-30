@@ -13,7 +13,7 @@ export class ReceiptController {
   }
 
   @Get(':id/points')
-  findOne(@Param('id') getOneReceiptDto: GetOneReceiptDTO) {
-    return this.receiptService.findOne(getOneReceiptDto);
+  findOne(@Param() params: GetOneReceiptDTO) {
+    return this.receiptService.findOne(params);
   }
 }
