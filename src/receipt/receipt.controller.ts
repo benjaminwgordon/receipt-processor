@@ -9,7 +9,6 @@ export class ReceiptController {
 
   @Post('/process')
   create(@Body() createReceiptDto: CreateReceiptDto) {
-    console.log({ createReceiptDto });
     return this.receiptService.create(createReceiptDto);
   }
 
