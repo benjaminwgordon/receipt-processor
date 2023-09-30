@@ -17,13 +17,11 @@ export class ReceiptService {
     const points = this.getTotalPoints(createReceiptDto);
     const uuid = uuidv4();
     this.receiptScores.set(uuid, points);
-    console.log(this.receiptScores.entries());
     return { id: uuid };
   }
 
   findOne(params: GetOneReceiptDTO) {
     const { id } = params;
-    console.log({ id });
     if (!this.receiptScores.has(id)) {
       throw new NotFoundException('No receipt with this ID');
     }
