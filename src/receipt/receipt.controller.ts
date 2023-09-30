@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { ReceiptService } from './receipt.service';
 import { CreateReceiptDto } from './dto/create-receipt.dto';
-import { UpdateReceiptDto } from './dto/update-receipt.dto';
 
 @Controller('receipt')
 export class ReceiptController {
