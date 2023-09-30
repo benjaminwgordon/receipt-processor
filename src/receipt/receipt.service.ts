@@ -10,6 +10,7 @@ import { GetOneReceiptDTO } from './dto/get-one-receipt.dto';
 
 @Injectable()
 export class ReceiptService {
+  // receiptScores maps receipt ids as UUIDs to receipt scores
   private readonly receiptScores = new Map<string, number>();
 
   create(createReceiptDto: CreateReceiptDto): { id: string } {
@@ -26,11 +27,7 @@ export class ReceiptService {
     }
 
     const points = this.receiptScores.get(id);
-    if (points === undefined) {
-      throw new NotFoundException('Error processing request');
-    } else {
-      return { points };
-    }
+    return { points };
   }
 
   getTotalPoints = (createReceiptDto: CreateReceiptDto) => {
@@ -90,6 +87,7 @@ export class ReceiptService {
     return Math.floor(items.length / 2) * 5;
   };
 
+  // 0.2 * price points for each item whose trimmed description length is divisible by 3
   getTrimmedLengthDivisibleBy3Points = (items: Item[]) => {
     return items.reduce((sum, item) => {
       if (item.shortDescription.trim().length % 3 !== 0) return sum;
@@ -97,6 +95,7 @@ export class ReceiptService {
     }, 0);
   };
 
+  //6 points if the day in the purchase date is odd
   getPurchaseDayOddPoints = (purchaseDate: Date) => {
     // purchaseDate already validated as a date by class-validator
     const purchaseDay = new Date(purchaseDate).getDay();
@@ -104,6 +103,7 @@ export class ReceiptService {
     return isDayOdd ? 6 : 0;
   };
 
+  //10 points if the time of purchase is after 2:00pm and before 4:00pm
   getBetween2and4Points = (purchaseTime: string) => {
     const time = parseInt(purchaseTime.split(':')[0]);
     const isBetween2and4pm = time >= 14 && time < 16;
