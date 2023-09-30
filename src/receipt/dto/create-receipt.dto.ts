@@ -6,20 +6,23 @@ import {
 } from 'class-validator';
 
 export class CreateReceiptDto {
-  retailer: String;
+  retailer: string;
 
   @IsDate()
-  purchaseDate: String;
+  purchaseDate: Date;
 
   @IsMilitaryTime()
-  purchaseTime: String;
+  purchaseTime: string;
 
   @ValidateNested()
   items: Item[];
+
+  @IsCurrency()
+  total: string;
 }
 
-class Item {
-  shortDescription: String;
+export class Item {
+  shortDescription: string;
 
   @IsCurrency()
   price: number;

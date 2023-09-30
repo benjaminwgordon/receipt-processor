@@ -1,25 +1,17 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ReceiptService } from './receipt.service';
 import { CreateReceiptDto } from './dto/create-receipt.dto';
 
-@Controller('receipt')
+@Controller('receipts')
 export class ReceiptController {
   constructor(private readonly receiptService: ReceiptService) {}
 
-  @Post(':id/process')
+  @Post('/process')
   create(@Body() createReceiptDto: CreateReceiptDto) {
     return this.receiptService.create(createReceiptDto);
   }
 
-  @Get(':id')
+  @Get(':id/points')
   findOne(@Param('id') id: string) {
     return this.receiptService.findOne(+id);
   }
