@@ -2,13 +2,18 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateReceiptDto, Item } from './dto/create-receipt.dto';
 import { countAlphaNumerics } from '../utils/countAlphaNumerics';
+import { v4 as uuidv4 } from 'uuid';
+import { GetOneReceiptDTO } from './dto/get-one-receipt.dto';
 
 @Injectable()
 export class ReceiptService {
-  create(createReceiptDto: CreateReceiptDto) {
+  private readonly receiptScores = new Map<string, number>();
+
+  create(createReceiptDto: CreateReceiptDto): { id: string } {
     const { retailer, purchaseDate, purchaseTime, items, total } =
       createReceiptDto;
 
@@ -40,11 +45,27 @@ export class ReceiptService {
       oddDayPoints +
       between2and4Points;
 
-    return { points: totalPoints };
+    try {
+      const uuid = uuidv4();
+      this.receiptScores.set(uuid, totalPoints);
+      return { id: uuid };
+    } catch (err) {
+      throw new InternalServerErrorException('Error processing request');
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} receipt`;
+  findOne(getOneReceiptDTO: GetOneReceiptDTO) {
+    const { id } = getOneReceiptDTO;
+    if (!this.receiptScores.has(id)) {
+      throw new NotFoundException('No receipt with this ID');
+    }
+
+    const points = this.receiptScores.get(id);
+    if (points === undefined) {
+      throw new NotFoundException('Error processing request');
+    } else {
+      return points;
+    }
   }
 
   getTotalCents = (total: string): number => {
@@ -79,7 +100,6 @@ export class ReceiptService {
   getTrimmedLengthDivisibleBy3Points = (items: Item[]) => {
     return items.reduce((sum, item) => {
       if (item.shortDescription.trim().length % 3 !== 0) return sum;
-      console.log(item.shortDescription.trim());
       return sum + Math.ceil(item.price * 0.2);
     }, 0);
   };

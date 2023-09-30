@@ -2,10 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ReceiptService } from './receipt.service';
 import { plainToInstance } from 'class-transformer';
 import { CreateReceiptDto } from './dto/create-receipt.dto';
-import {
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { IsUUID } from 'class-validator';
 
 describe('ReceiptService', () => {
   let service: ReceiptService;
@@ -52,8 +50,8 @@ describe('ReceiptService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should return correct point count with valid input', () => {
-    expect(service.create(testingData1)).toStrictEqual({ points: 28 });
+  it('should return a uuid with valid input', () => {
+    expect(service.create(testingData1).id).toBeDefined();
   });
 
   it('should extract the number of cents from the input total', () => {
